@@ -31,7 +31,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
 
-	sigaction(SIGSEV, &act, &prev_act);
+	sigaction(SIGSEGV, &act, &prev_act);
 
 	regions[0].from=curr;
 
@@ -70,9 +70,9 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 						regions[curr_size].to = curr;
 						regions[curr_size].mode = MEM_NO;
 					}
-
 				}
 			}
+
 			check = false;
 		}
 
@@ -83,12 +83,38 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 			if (read(fd, curr, 1) == 1) {
 				// can read.. MEM_RW
 				*curr = sample;
+				if (curr_mode != MEM_RW) {
+					curr_size = curr_size + 1;
+					curr_mode = MEM_RW;
 
+					if (curr_size < size) {
+						regions[curr_size].to = curr - 1;
+
+						if (curr_size < size) {
+							regions[curr_size].to = curr;
+							regoins[curr_size].mode = MEM_RW;
+						}
+					}
+				}
 
 			} else {
 				// MEM_RO
+				if (curr_mode != MEM_RO) {
+					curr_size = curr_size + 1;
+					curr_mode = MEM_RO;
+
+					if (curr_size < size) {
+						regions[curr_size].to = curr - 1;
+
+						if(curr_size < size) {
+							regions[curr_size].to = curr;
+							regions[curr_size].mode = MEM_RO;
+						}
+					}
+				}
 			}
 		}
+
 		prev = curr;
 		curr = curr + PAGE_SIZE;
 	}
