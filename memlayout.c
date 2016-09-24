@@ -134,3 +134,18 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 int get_mem_diff (struct memregion * regions, unsigned int howmany,
 					struct memregion * thediff, unsigned int diffsize) {
 }
+
+void print_regions (struct memregion * regions, int numregions) {
+	printf("There are %i many regions\n", numregions);
+
+	for (int i = 0; i < numregions; i++) {
+		printf("0x%p - 0x%p ");
+		if (regions[i].mode == MEM_RO) {
+			printf("RO\n");
+		} else if (regions[i] == MEM_RW) {
+			printf("RW\n");
+		} else {
+			printf("NO\n");
+		}
+	}
+}
