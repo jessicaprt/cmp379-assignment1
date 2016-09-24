@@ -4,8 +4,13 @@
 #include <stdlib.h>
 #include <setjmp.h>
 #include <stdint.h>
+#include <fcntl.h>
+
+extern PAGE_SIZE;
+
 #include "memlayout.h"
 
+// Boolean Type Defintion
 typedef int bool;
 #define true 1
 #define false 0
@@ -21,8 +26,8 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 	char sample;
 	int curr_size = 0;
 	int curr_mode = 0;
-	void * prev = 0;
-	void * curr = 0;
+	char * prev = 0;
+	char * curr = 0;
 
 	struct sigaction act;
 	struct sigaction prev_act;
@@ -77,7 +82,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 		}
 
 		if(check){
-			check = false
+			check = false;
 			sample = *curr;
 
 			if (read(fd, curr, 1) == 1) {
@@ -92,7 +97,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 
 						if (curr_size < size) {
 							regions[curr_size].to = curr;
-							regoins[curr_size].mode = MEM_RW;
+							regions[curr_size].mode = MEM_RW;
 						}
 					}
 				}
@@ -120,7 +125,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 	}
 	close(fd);
 
-	sigaction(SIGSEV, &prev_act, 0);
+	sigaction(SIGSEGV, &prev_act, 0);
 
 	return curr_size;
 
