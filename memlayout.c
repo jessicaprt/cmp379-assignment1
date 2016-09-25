@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <fcntl.h>
 
-extern PAGE_SIZE;
+extern int PAGE_SIZE;
 
 #include "memlayout.h"
 
@@ -61,7 +61,8 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 		}
 	}
 
-	while((uint32_t) curr >= (uint32_t) prev) {
+	while((uint32_t) curr >= (uint32_t) prev && (uint64_t) curr < (uint64_t) 0xFFFFFFFF) {
+
 		check = true;
 		if(sigsetjmp(env,1) == 2) {
 			if (curr_mode != MEM_NO) {
@@ -69,10 +70,10 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 				curr_mode = MEM_NO;
 				
 				if (curr_size - 1 < size) {
-					regions[curr_size].to = curr-1;
+					regions[curr_size - 1].to = curr-1;
 
 					if(curr_size < size) {
-						regions[curr_size].to = curr;
+						regions[curr_size].from = curr;
 						regions[curr_size].mode = MEM_NO;
 					}
 				}
@@ -93,10 +94,10 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 					curr_mode = MEM_RW;
 
 					if (curr_size < size) {
-						regions[curr_size].to = curr - 1;
+						regions[curr_size - 1].to = curr - 1;
 
 						if (curr_size < size) {
-							regions[curr_size].to = curr;
+							regions[curr_size].from = curr;
 							regions[curr_size].mode = MEM_RW;
 						}
 					}
@@ -109,10 +110,10 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 					curr_mode = MEM_RO;
 
 					if (curr_size < size) {
-						regions[curr_size].to = curr - 1;
+						regions[curr_size - 1].to = curr - 1;
 
 						if(curr_size < size) {
-							regions[curr_size].to = curr;
+							regions[curr_size].from = curr;
 							regions[curr_size].mode = MEM_RO;
 						}
 					}
@@ -123,6 +124,11 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 		prev = curr;
 		curr = curr + PAGE_SIZE;
 	}
+
+	// Close last region
+	regions[curr_size].to = curr - 1;
+	curr_size = curr_size + 1;
+	
 	close(fd);
 
 	sigaction(SIGSEGV, &prev_act, 0);
@@ -138,11 +144,13 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 void print_regions (struct memregion * regions, int numregions, unsigned int size) {
 	printf("There are %i many regions\n", numregions);
 
-	for (int i = 0; i < numregions || i < size; i++) {
-		printf("0x%p - 0x%p ", regions[i].from, regions[i].to);
+	int i = 0;
+
+	for (i = 0; i < numregions && i < size; i++) {
+		printf("%p - %p ", regions[i].from, regions[i].to);
 		if (regions[i].mode == MEM_RO) {
 			printf("RO\n");
-		} else if (regions[i] == MEM_RW) {
+		} else if (regions[i].mode == MEM_RW) {
 			printf("RW\n");
 		} else {
 			printf("NO\n");
