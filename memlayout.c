@@ -147,7 +147,7 @@ void print_regions (struct memregion * regions, int numregions, unsigned int siz
 	int i = 0;
 
 	for (i = 0; i < numregions && i < size; i++) {
-		printf("%p - %p ", regions[i].from, regions[i].to);
+		printf("0x%08x - 0x%08x ", regions[i].from, regions[i].to);
 		if (regions[i].mode == MEM_RO) {
 			printf("RO\n");
 		} else if (regions[i].mode == MEM_RW) {
