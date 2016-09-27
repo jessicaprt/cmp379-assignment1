@@ -142,7 +142,7 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 }
 
 void print_regions (struct memregion * regions, int numregions, unsigned int size) {
-	printf("There are %i many regions\n", numregions);
+	printf("There are %i regions\n", numregions);
 
 	int i = 0;
 
