@@ -83,7 +83,6 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 		}
 
 		if(check){
-			check = false;
 			sample = *curr;
 
 			if (read(fd, curr, 1) == 1) {
