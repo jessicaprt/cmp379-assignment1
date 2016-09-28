@@ -125,9 +125,11 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 	}
 
 	// Close last region
-	regions[curr_size].to = curr - 1;
-	curr_size = curr_size + 1;
-	
+	if(curr_size < size) {
+		regions[curr_size].to = curr - 1;
+		curr_size = curr_size + 1;
+	}
+
 	close(fd);
 
 	sigaction(SIGSEGV, &prev_act, 0);
