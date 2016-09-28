@@ -50,7 +50,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 
 	if (check){
 		sample = *curr;
-		
+
 		if (read(fd, curr, 1) == 1) {
 			regions[0].mode = MEM_RW;
 			curr_mode = MEM_RW;
@@ -68,7 +68,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 			if (curr_mode != MEM_NO) {
 				curr_size = curr_size + 1;
 				curr_mode = MEM_NO;
-				
+
 				if (curr_size - 1 < size) {
 					regions[curr_size - 1].to = curr-1;
 
@@ -139,7 +139,198 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 }
 
 int get_mem_diff (struct memregion * regions, unsigned int howmany,
-					struct memregion * thediff, unsigned int diffsize) {
+		struct memregion * thediff, unsigned int diffsize) {
+	// Write Testing Variables
+	int fd = open("/dev/zero", O_RDONLY);
+	char sample;
+
+	int curr_size = 0;
+	int curr_mode = 0;
+
+	int roff = 0; // regions_offset
+	bool clean = true;
+
+	char * prev = 0;
+	char * curr = 0;
+
+
+	// Signal Handler
+	struct sigaction act;
+	struct sigaction prev_act;
+
+	act.sa_handler = sigsev_handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+
+	sigaction(SIGSEGV, &act, &prev_act);
+
+	// Does the page need to be read permission checked
+	bool check = true;
+
+	if(sigsetjmp(env,1) == 2) {
+		curr_mode = MEM_NO;
+		check = false;
+	}
+
+	if (check){
+		sample = *curr;
+
+		if (read(fd, curr, 1) == 1) {
+			curr_mode = MEM_RW;
+			*curr = sample;
+		} else {
+			curr_mode = MEM_RO;
+		}
+	}
+
+	if (curr_mode != regions[0].mode){
+		thediff[0].from = curr;
+		thediff[0].mode = curr_mode;
+		clean = false;
+	}
+
+	while((uint32_t) curr >= (uint32_t) prev && (uint64_t) curr < (uint64_t) 0xFFFFFFFF) {
+		check = true;
+		if(sigsetjmp(env,1) == 2) {
+			if (clean && curr - 1 != regions[roff].to && curr_mode == MEM_NO && regions[roff].mode != MEM_NO){
+				clean = false;
+				curr_size = curr_size + 1;
+				if(curr_size < diffsize){
+					thediff[curr_size].from = regions[roff].from;
+				}
+			}
+
+			if (curr_mode != MEM_NO) {
+				while(roff + 1 < howmany 
+						&& regions[roff].from < curr){
+					roff = roff + 1;
+				}
+
+				if(regions[roff - 1].to == curr - 1 &&
+						MEM_NO == regions[roff].mode){
+					if(clean == false){
+						clean = true;
+						thediff[curr_size].to = curr - 1;
+						curr_size = curr_size + 1;
+					} else {
+						clean = true;
+					}
+				} else {
+					thediff[curr_size].to = curr - 1;
+					curr_size = curr_size + 1;
+					if(curr_size < diffsize){
+						thediff[curr_size].mode = MEM_NO;
+						thediff[curr_size].from = curr;
+						clean = false;
+
+					}
+				}
+				curr_mode = MEM_NO;
+
+			}
+			check = false;
+		}
+
+		if(check){
+			sample = *curr;
+
+			if (read(fd, curr, 1) == 1) {
+				*curr = sample;
+				// can read.. MEM_RW
+				if (clean && curr - 1 != regions[roff].to && curr_mode == MEM_RW && regions[roff].mode != MEM_RW){
+					clean = false;
+					curr_size = curr_size + 1;
+					if(curr_size < diffsize){
+						thediff[curr_size].from = regions[roff].from;
+					}
+				}
+
+				if (curr_mode != MEM_RW) {
+					while(roff + 1 < howmany 
+							&& regions[roff].from < curr){
+						roff = roff + 1;
+					}
+
+					if(regions[roff - 1].to == curr - 1 &&
+							MEM_RW == regions[roff].mode){
+						if(clean == false){
+							clean = true;
+							thediff[curr_size].to = curr - 1;
+							curr_size = curr_size + 1;
+						} else {
+							clean = true;
+						}
+					} else {
+						thediff[curr_size].to = curr - 1;
+						curr_size = curr_size + 1;
+						if(curr_size < diffsize){
+							thediff[curr_size].mode = MEM_RW;
+							thediff[curr_size].from = curr;
+							clean = false;
+
+						}
+					}
+					curr_mode = MEM_RW;
+
+				} 
+
+			} else {
+				// MEM_RO
+				if (clean && curr - 1 != regions[roff].to && regions[roff].mode != MEM_RO){
+					clean = false;
+					if(curr_size < diffsize){
+						thediff[curr_size].from = regions[roff].from;
+					}
+				}
+
+				if (curr_mode != MEM_RO) {
+					while(roff + 1 < howmany 
+							&& regions[roff].from < curr){
+						roff = roff + 1;
+					}
+
+					if(regions[roff - 1].to == curr - 1 &&
+							MEM_RO == regions[roff].mode){
+						if(clean == false){
+							clean = true;
+							thediff[curr_size].to = curr - 1;
+							curr_size = curr_size + 1;
+						} else {
+							clean = true;
+						}
+					} else {
+						thediff[curr_size].to = curr - 1;
+						curr_size = curr_size + 1;
+						if(curr_size < diffsize){
+							thediff[curr_size].mode = MEM_RO;
+							thediff[curr_size].from = curr;
+							clean = false;
+
+						}
+					}
+
+					curr_mode = MEM_RO;
+
+				}
+
+			}
+
+		}
+		prev = curr;
+		curr = curr + PAGE_SIZE;
+	}
+
+	// Close last region
+	if(clean == false && curr_size < diffsize){
+		thediff[curr_size].to = curr - 1;
+		curr_size = curr_size + 1;
+	}
+
+	close(fd);
+
+	sigaction(SIGSEGV, &prev_act, 0);
+
+	return curr_size;
 }
 
 void print_regions (struct memregion * regions, int numregions, unsigned int size) {
@@ -157,4 +348,5 @@ void print_regions (struct memregion * regions, int numregions, unsigned int siz
 			printf("NO\n");
 		}
 	}
+	printf("\n");
 }
