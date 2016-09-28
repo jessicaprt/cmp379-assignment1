@@ -7,16 +7,19 @@
 
 int PAGE_SIZE = 4096;
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
+	printf("*** mem_mod1 ***\n");
 	struct memregion regions[REGIONS_SIZE];
 	struct memregion thediff[DIFF_SIZE];
+
+	//printf("this is mem_mod1\n");
 
 	//call get_mem_layout
 	int numregions = get_mem_layout(regions, REGIONS_SIZE);
 	print_regions(regions, numregions, REGIONS_SIZE); 
 
 	//void *malloc(PAGE_SIZE);
-	mmap(NULL, PAGE_SIZE, PROT_READ, MAP_ANONYMOUS, 0, 0);
+	mmap(NULL, PAGE_SIZE, PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
 
 	//call get_mem_diff
 	int diffregions = get_mem_diff(regions, diffregions, thediff, DIFF_SIZE);
