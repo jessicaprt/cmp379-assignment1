@@ -12,15 +12,27 @@ int main(int argc, char** argv){
 	struct memregion regions[REGIONS_SIZE];
 	struct memregion thediff[DIFF_SIZE];
 
-	unsigned int * addr = mmap(NULL, PAGE_SIZE, PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+	int fd = open ("/dev/zero", O_RDONLY);
+	char* addr = mmap (NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, 
+	        MAP_PRIVATE, fd, 0);
+	close (fd);
+
 	//call get_mem_layout
 	int numregions = get_mem_layout(regions, REGIONS_SIZE);
 	print_regions(regions, numregions, REGIONS_SIZE); 
-	munmap(addr, PAGE_SIZE);
+
+	//change accessibility 
+	mprotect (memory, PAGE_SIZE, PROT_READ);
 
 	//call get_mem_diff
 	int diffregions = get_mem_diff(regions, diffregions, thediff, DIFF_SIZE);
 	print_regions(thediff, diffregions, DIFF_SIZE);
-	
+
+	munmap (addr, PAGE_SIZE);
 	return 0;
 }
+
+int fd = open ("/dev/zero", O_RDONLY);
+char* memory = mmap (NULL, page_size, PROT_READ | PROT_WRITE, 
+        MAP_PRIVATE, fd, 0);
+close (fd);
