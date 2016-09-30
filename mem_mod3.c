@@ -12,10 +12,11 @@ int main(int argc, char** argv){
 	struct memregion regions[REGIONS_SIZE];
 	struct memregion thediff[DIFF_SIZE];
 
-	int fd = open ("/dev/zero", O_RDONLY);
 	char* addr = mmap (NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, 
-	        MAP_PRIVATE, fd, 0);
-	close (fd);
+	        MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+
+    char* memory = mmap (NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, 
+	        MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 
 	//call get_mem_layout
 	int numregions = get_mem_layout(regions, REGIONS_SIZE);
@@ -25,14 +26,11 @@ int main(int argc, char** argv){
 	mprotect (memory, PAGE_SIZE, PROT_READ);
 
 	//call get_mem_diff
-	int diffregions = get_mem_diff(regions, diffregions, thediff, DIFF_SIZE);
+	int diffregions = get_mem_diff(regions, numregions, thediff, DIFF_SIZE);
 	print_regions(thediff, diffregions, DIFF_SIZE);
 
 	munmap (addr, PAGE_SIZE);
+    munmap (memory, PAGE_SIZE);
 	return 0;
 }
 
-int fd = open ("/dev/zero", O_RDONLY);
-char* memory = mmap (NULL, page_size, PROT_READ | PROT_WRITE, 
-        MAP_PRIVATE, fd, 0);
-close (fd);

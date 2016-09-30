@@ -20,7 +20,7 @@ int main(int argc, char** argv){
 	mmap(NULL, 3*PAGE_SIZE, PROT_READ, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
 
 	//call get_mem_diff
-	int diffregions = get_mem_diff(regions, diffregions, thediff, DIFF_SIZE);
+	int diffregions = get_mem_diff(regions, numregions, thediff, DIFF_SIZE);
 	print_regions(thediff, diffregions, DIFF_SIZE);
 
 	return 0;
