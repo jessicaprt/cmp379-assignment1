@@ -210,8 +210,10 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 						MEM_NO == regions[roff].mode){
 					if(clean == false){
 						clean = true;
-						thediff[curr_size].to = curr - 1;
-						curr_size = curr_size + 1;
+                        if(curr_size < diffsize){
+                            thediff[curr_size].to = curr - 1;
+                            curr_size = curr_size + 1;
+                        }
 					} else {
 						clean = true;
 					}
@@ -254,8 +256,10 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 							MEM_RW == regions[roff].mode){
 						if(clean == false){
 							clean = true;
-							thediff[curr_size].to = curr - 1;
-							curr_size = curr_size + 1;
+                            if(curr_size < diffsize){
+                                thediff[curr_size].to = curr - 1;
+                                curr_size = curr_size + 1;
+                            }
 						} else {
 							clean = true;
 						}
@@ -291,8 +295,10 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 							MEM_RO == regions[roff].mode){
 						if(clean == false){
 							clean = true;
-							thediff[curr_size].to = curr - 1;
-							curr_size = curr_size + 1;
+                            if(curr_size < diffsize){
+                                thediff[curr_size].to = curr - 1;
+                                curr_size = curr_size + 1;
+                            }
 						} else {
 							clean = true;
 						}
