@@ -61,7 +61,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 		}
 	}
 
-	while(curr >= prev && (uint64_t) curr < (uint64_t) 0xFFFFFFFF) {
+	while(curr >= prev && (uintptr_t) curr < (uint64_t) 0xFFFFFFFF) {
 
 		check = true;
 		if(sigsetjmp(env,1) == 2) {
@@ -189,7 +189,7 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 		clean = false;
 	}
 
-	while(curr >= prev && (uint64_t) curr < (uint64_t) 0xFFFFFFFF) {
+	while(curr >= prev && (uintptr_t) curr < (uint64_t) 0xFFFFFFFF) {
 		check = true;
 		if(sigsetjmp(env,1) == 2) {
 			if (clean && curr - 1 != regions[roff].to && curr_mode == MEM_NO && regions[roff].mode != MEM_NO){
