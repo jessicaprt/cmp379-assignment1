@@ -16,21 +16,34 @@ typedef int bool;
 #define false 0
 
 sigjmp_buf env;
+struct sigaction act;
+struct sigaction prev_act;
+
+int fd; 
+
+int curr_size;
+int roff;
+
+int curr_mode;
+
+char * prev;
+char * curr;
+char sample;
+
+bool check;
+bool clean;
 
 void sigsev_handler(int sig) {
 	siglongjmp(env, 2);
 }
 
 int get_mem_layout (struct memregion * regions, unsigned int size) {
-	int fd = open("/dev/zero", O_RDONLY);
-	char sample;
-	int curr_size = 0;
-	int curr_mode = 0;
-	char * prev = 0;
-	char * curr = 0;
-
-	struct sigaction act;
-	struct sigaction prev_act;
+	fd = open("/dev/zero", O_RDONLY);
+	sample;
+	curr_size = 0;
+	curr_mode = 0;
+	prev = 0;
+	curr = 0;
 
 	act.sa_handler = sigsev_handler;
 	sigemptyset(&act.sa_mask);
@@ -40,7 +53,7 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 
 	regions[0].from=curr;
 
-	bool check = true;
+	check = true;
 
 	if(sigsetjmp(env,1) == 2) {
 		regions[0].mode = MEM_NO;
@@ -141,22 +154,18 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 int get_mem_diff (struct memregion * regions, unsigned int howmany,
 		struct memregion * thediff, unsigned int diffsize) {
 	// Write Testing Variables
-	int fd = open("/dev/zero", O_RDONLY);
-	char sample;
+	fd = open("/dev/zero", O_RDONLY);
+	sample;
 
-	int curr_size = 0;
-	int curr_mode = 0;
+	curr_size = 0;
+	curr_mode = 0;
 
-	int roff = 0; // regions_offset
-	bool clean = true;
+	roff = 0; // regions_offset
+	clean = true;
 
-	char * prev = 0;
-	char * curr = 0;
+	prev = 0;
+	curr = 0;
 
-
-	// Signal Handler
-	struct sigaction act;
-	struct sigaction prev_act;
 
 	act.sa_handler = sigsev_handler;
 	sigemptyset(&act.sa_mask);
@@ -165,7 +174,7 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 	sigaction(SIGSEGV, &act, &prev_act);
 
 	// Does the page need to be read permission checked
-	bool check = true;
+	check = true;
 
 	if(sigsetjmp(env,1) == 2) {
 		curr_mode = MEM_NO;
