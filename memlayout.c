@@ -223,8 +223,8 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 					if(curr_size < diffsize){
 						thediff[curr_size].mode = MEM_NO;
 						thediff[curr_size].from = curr;
-						clean = false;
 					}
+                    clean = false;
 				}
 				curr_mode = MEM_NO;
 
@@ -269,8 +269,8 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 						if(curr_size < diffsize){
 							thediff[curr_size].mode = MEM_RW;
 							thediff[curr_size].from = curr;
-							clean = false;
 						}
+                        clean = false;
 					}
 					curr_mode = MEM_RW;
 
@@ -308,8 +308,8 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 						if(curr_size < diffsize){
 							thediff[curr_size].mode = MEM_RO;
 							thediff[curr_size].from = curr;
-							clean = false;
 						}
+                        clean = false;
 					}
 
 					curr_mode = MEM_RO;
