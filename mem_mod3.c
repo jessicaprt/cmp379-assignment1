@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -12,8 +13,9 @@ int main(int argc, char** argv){
 	struct memregion regions[REGIONS_SIZE];
 	struct memregion thediff[DIFF_SIZE];
 
-	char* addr = mmap (NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, 
-	        MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+    PAGE_SIZE = sysconf(_SC_PAGESIZE);
+
+    printf("PAGE_SIZE: %d\n", PAGE_SIZE);
 
     char* memory = mmap (NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, 
 	        MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
@@ -29,7 +31,6 @@ int main(int argc, char** argv){
 	int diffregions = get_mem_diff(regions, numregions, thediff, DIFF_SIZE);
 	print_regions(thediff, diffregions, DIFF_SIZE);
 
-	munmap (addr, PAGE_SIZE);
     munmap (memory, PAGE_SIZE);
 	return 0;
 }

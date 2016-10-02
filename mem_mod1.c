@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -12,7 +13,9 @@ int main(int argc, char** argv) {
 	struct memregion regions[REGIONS_SIZE];
 	struct memregion thediff[DIFF_SIZE];
 
-	//printf("this is mem_mod1\n");
+    PAGE_SIZE = sysconf(_SC_PAGESIZE);
+
+    printf("PAGE_SIZE: %d\n", PAGE_SIZE);
 
 	//call get_mem_layout
 	int numregions = get_mem_layout(regions, REGIONS_SIZE);
