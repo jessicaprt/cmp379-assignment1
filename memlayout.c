@@ -26,7 +26,8 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 	char sample;
 	
     int curr_size = 0;
-	char * curr = 0;
+    char * curr = 0;
+    char * prev = 0;
 
     struct sigaction act;
     struct sigaction prev_act;
@@ -64,9 +65,10 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
 	}
     
 
-	while((uintptr_t) curr < (uint64_t) 0xFFFFFFFF) {
 
-		check = true;
+    while(prev <= curr && (uintptr_t) curr < (uint64_t) 0xFFFFFFFF) {
+
+        check = true;
         closed_region = false;
 
 		if(sigsetjmp(env,1) == 2) {
@@ -110,8 +112,9 @@ int get_mem_layout (struct memregion * regions, unsigned int size) {
             curr_size = curr_size + 1;
         }
 
-		curr = curr + PAGE_SIZE;
-	}
+        prev = curr;
+        curr = curr + PAGE_SIZE;
+    }
 
     // Close last region
     curr_region.to = curr - 1;
@@ -137,7 +140,8 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 	char sample;
 	
     int curr_size = 0;
-	char * curr = 0;
+    char * curr = 0;
+    char * prev = 0;
 
     struct sigaction act;
     struct sigaction prev_act;
@@ -177,7 +181,7 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 	}
     
 
-	while((uintptr_t) curr < (uint64_t) 0xFFFFFFFF){
+    while(prev <= curr && (uintptr_t) curr < (uint64_t) 0xFFFFFFFF){
 
         closed_region = false;
 		check = true;
@@ -232,9 +236,10 @@ int get_mem_diff (struct memregion * regions, unsigned int howmany,
 
             curr_region = next_region;
         }
-        
-		curr = curr + PAGE_SIZE;
-	}
+
+        prev = curr;
+        curr = curr + PAGE_SIZE;
+    }
 
     // Close last region
     curr_region.to = curr - 1;
